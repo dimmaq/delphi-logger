@@ -6,7 +6,6 @@ uses
   System.SysUtils, System.Classes, Winapi.RichEdit, Vcl.ExtCtrls, Vcl.ComCtrls,
   System.Generics.Collections, System.SyncObjs, Vcl.Graphics, System.IOUtils,
   Winapi.Windows, Winapi.Messages, System.AnsiStrings,
-  madStackTrace,
   //
   uLoggerInterface;
 
