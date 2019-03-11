@@ -50,7 +50,7 @@ type
     //---
     function FormatScreen(const AItem: TItem): string;
     function FormatFile(const AItem: TItem): string;
-    procedure CreateLogFile; inline;
+    procedure CreateLogFile;
     procedure TimerEvent(Sender: TObject);
     procedure SetRichEdit(const Value: TRichEdit);
     procedure SetSaveFile(const Value: Boolean);
