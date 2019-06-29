@@ -37,9 +37,9 @@ type
     FFile: TStreamWriter;
     FSaveFile: Boolean;
     FLevelLimit: TLogLevel;
-    FFormatFileText: string;
+//    FFormatFileText: string;
     FFormatFileTime: string;
-    FFormatScreenText: string;
+//    FFormatScreenText: string;
     FFormatScreenTime: string;
     FScreenFilter: string;
     FPrefix: string;
@@ -48,7 +48,7 @@ type
     FTimerPause: Boolean;
     FTrimOut: Boolean;
     //---
-    function FormatScreen(const AItem: TItem): string;
+    function FormatScreen(const AItem: TItem; const AAddTime: Boolean): string;
     function FormatFile(const AItem: TItem): string;
     procedure CreateLogFile;
     procedure TimerEvent(Sender: TObject);
@@ -59,8 +59,8 @@ type
     procedure ScreenThreadStop;
     procedure ScreenThreadSignal;
   public
-    constructor Create(const ARichEdit: TRichEdit; const AFileName: TFileName); overload;
-    constructor Create(const ALogger: ILoggerInterface; const APrefix: string = '';
+    constructor Create(const ARichEdit: TRichEdit; const AFileName: TFileName = ''); overload;
+    constructor Create(const APrefix: string; const ALogger: ILoggerInterface;
       const AFileName: TFileName = ''); overload;
     destructor Destroy; override;
     //---
@@ -124,9 +124,9 @@ type
     procedure SetLogger(const ALogger: ILoggerInterface);
     //---
     property LevelLimit: TLogLevel read FLevelLimit write FLevelLimit;
-    property FormatFileText: string read FFormatFileText write FFormatFileText;
+//    property FormatFileText: string read FFormatFileText write FFormatFileText;
     property FormatFileTime: string read FFormatFileTime write FFormatFileTime;
-    property FormatScreenText: string read FFormatScreenText write FFormatScreenText;
+//    property FormatScreenText: string read FFormatScreenText write FFormatScreenText;
     property FormatScreenTime: string read FFormatScreenTime write FFormatScreenTime;
     property ScreenFilter: string read FScreenFilter write SetScreenFilter;
     property RichEdit: TRichEdit read FRichEdit write SetRichEdit;
@@ -177,22 +177,22 @@ begin
   FLogHistSize := MAX_BUFFER_LENGTH_;
   FLogInf := nil;
 
-  FFormatFileText := '[%s] %s%s %s';
+//  FFormatFileText := '[%s] %s%s %s';
   FFormatFileTime := 'yyyy.mm.dd hh:nn:ss:zzz';
-  FFormatScreenText := '%s%s %s';
+//  FFormatScreenText := '%s%s %s';
   FFormatScreenTime := 'hh:nn:ss';
   //---
   ScreenThreadStart();
 end;
 
-constructor TReLog3.Create(const ALogger: ILoggerInterface; const APrefix: string;
+constructor TReLog3.Create(const APrefix: string; const ALogger: ILoggerInterface;
   const AFileName: TFileName);
 begin
   Create(nil, '');
   FLogInf := ALogger;
   FPrefix := APrefix;
-  FormatScreenTime := '';
-  FLogHistSize := 0;
+//  FFormatScreenTime := '';
+//  FLogHistSize := 0;
 
   FFileName := Trim(AFileName);
   FSaveFile := FFileName <> '';
@@ -216,17 +216,31 @@ function TReLog3.FormatFile(const AItem: TItem): string;
 var time: string;
 begin
   time := FormatDateTime(FFormatFileTime, AItem.Time);
-  Result := Format(FFormatFileText, [time, FPrefix, LOG_LEVEL[AItem.Level], AItem.Message])
+//  Result := Format(FFormatFileText, [time, LOG_LEVEL[AItem.Level], FPrefix, AItem.Message])
+  if FPrefix <> '' then
+    Result := '[' + time + '] ' + LOG_LEVEL[AItem.Level] + ' ' + FPrefix + ' ' + AItem.Message
+  else
+    Result := '[' + time + '] ' + LOG_LEVEL[AItem.Level] + ' ' + AItem.Message
 end;
 
-function TReLog3.FormatScreen(const AItem: TItem): string;
+function TReLog3.FormatScreen(const AItem: TItem; const AAddTime: Boolean): string;
 var time: string;
 begin
-  if FFormatScreenTime <> '' then
+  if AAddTime and (FFormatScreenTime <> '') then
     time := FormatDateTime(FFormatScreenTime, AItem.Time)
   else
     time := '';
-  Result := Format(FFormatScreenText, [time, FPrefix, AItem.Message])
+//  Result := Format(FFormatScreenText, [time, FPrefix, AItem.Message])
+  if time <> '' then
+    if FPrefix <> '' then
+      Result :=  time + ' ' + FPrefix + ' ' + AItem.Message
+    else
+      Result :=  time + ' ' + AItem.Message
+  else
+    if FPrefix <> '' then
+      Result :=  FPrefix + ' ' + AItem.Message
+    else
+      Result :=  AItem.Message
 end;
 
 procedure TReLog3.TimerEvent(Sender: TObject);
@@ -242,7 +256,7 @@ var
 
   procedure AddText;
   begin
-    text := text + FormatScreen(item) + #13#10;
+    text := text + FormatScreen(item, True) + #13#10;
   end;
 
   procedure WriteText;
@@ -384,7 +398,7 @@ begin
     //---
     if Assigned(FLogInf) then
     begin
-      FLogInf.Log(item.Level, FormatScreen(item));
+      FLogInf.Log(item.Level, FormatScreen(item, False));
     end;
     //
     if item.Level >= FLevelLimit then
