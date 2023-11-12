@@ -21,10 +21,13 @@ type
         Color: TColor;
         Message: string;
         Time: TDateTime;
+        PerfCounter: Int64;
         constructor Create(const AMessage: string; const ALevel: TLogLevel; const AColor: TColor);
       end;
   private
 //    FInterface: ILoggerInterface;
+    //FPerfCounterPerSec: Int64;
+    FPerfCounterPerMicrSec: Int64;
     FLock: TCriticalSection;
     FRichEdit: TRichEdit;
     //TODO: заменить таймер на поток
@@ -164,8 +167,11 @@ type
 
 constructor TReLog3.Create(const ARichEdit: TRichEdit;
   const AFileName: TFileName);
+var i64: Int64;
 begin
   inherited Create;
+  QueryPerformanceFrequency(i64);
+  FPerfCounterPerMicrSec := i64 div 1000000;
   FLock := TCriticalSection.Create;
   FItems := TQueue<TItem>.Create;
   FHist := TQueue<TItem>.Create;
@@ -227,7 +233,7 @@ function TReLog3.FormatScreen(const AItem: TItem; const AAddTime: Boolean): stri
 var time: string;
 begin
   if AAddTime and (FFormatScreenTime <> '') then
-    time := FormatDateTime(FFormatScreenTime, AItem.Time)
+    time := FormatDateTime(FFormatScreenTime, AItem.Time) + ' ' + (AItem.PerfCounter div FPerfCounterPerMicrSec).ToString
   else
     time := '';
 //  Result := Format(FFormatScreenText, [time, FPrefix, AItem.Message])
@@ -238,9 +244,9 @@ begin
       Result :=  time + ' ' + AItem.Message
   else
     if FPrefix <> '' then
-      Result :=  FPrefix + ' ' + AItem.Message
+      Result := FPrefix + ' ' + AItem.Message
     else
-      Result :=  AItem.Message
+      Result := AItem.Message
 end;
 
 procedure TReLog3.TimerEvent(Sender: TObject);
@@ -726,6 +732,7 @@ begin
   Color := AColor;
   Level := ALevel;
   Time := Now();
+  QueryPerformanceCounter(PerfCounter);
   Message := AMessage;
 end;
 
