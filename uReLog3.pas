@@ -221,7 +221,7 @@ end;
 function TReLog3.FormatFile(const AItem: TItem): string;
 var time: string;
 begin
-  time := FormatDateTime(FFormatFileTime, AItem.Time);
+  time := FormatDateTime(FFormatFileTime, AItem.Time) + ' ' + (AItem.PerfCounter div FPerfCounterPerMicrSec).ToString;
 //  Result := Format(FFormatFileText, [time, LOG_LEVEL[AItem.Level], FPrefix, AItem.Message])
   if FPrefix <> '' then
     Result := '[' + time + '] ' + LOG_LEVEL[AItem.Level] + ' ' + FPrefix + ' ' + AItem.Message
