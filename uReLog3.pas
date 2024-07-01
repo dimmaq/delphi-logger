@@ -10,6 +10,8 @@ uses
   uLoggerInterface;
 
 type
+  TOnReLog3AddLine = procedure(const ASender: TObject; const AMessage: string) of object;
+
   TReLog3 = class(TInterfacedObject, ILoggerInterface, ILoggerAwareInterface)
 //  private
 //    FItemIdCounter: Integer;
@@ -50,6 +52,7 @@ type
     FLogHistSize: Integer;
     FTimerPause: Boolean;
     FTrimOut: Boolean;
+    FOnAddLine: TOnReLog3AddLine;
     //---
     function FormatScreen(const AItem: TItem; const AAddTime: Boolean): string;
     function FormatFile(const AItem: TItem): string;
@@ -139,6 +142,7 @@ type
     property Prefix: string read FPrefix write FPrefix;
     property LogHistSize: Integer read FLogHistSize write FLogHistSize;
     property TrimOut: Boolean read FTrimOut write FTrimOut;
+    property OnAddLine: TOnReLog3AddLine read FOnAddLine write FOnAddLine;
   end;
 
 implementation
@@ -318,7 +322,9 @@ begin
             end;
             AddText();
             {$ENDIF}
-          end
+          end;
+          if Assigned(OnAddLine) then
+            OnAddLine(Self, item.Message)
         end;
         if text <> '' then
         begin
