@@ -21,7 +21,7 @@ type
 //        ID: Cardinal;
         Level: TLogLevel;
         Color: TColor;
-        Message: string;
+        &Message: string;
         Time: TDateTime;
         PerfCounter: Int64;
         constructor Create(const AMessage: string; const ALevel: TLogLevel; const AColor: TColor);
@@ -175,7 +175,7 @@ var i64: Int64;
 begin
   inherited Create;
   QueryPerformanceFrequency(i64);
-  FPerfCounterPerMicrSec := i64 div 1000000;
+  FPerfCounterPerMicrSec := i64 div (1000 * 1000);
   FLock := TCriticalSection.Create;
   FItems := TQueue<TItem>.Create;
   FHist := TQueue<TItem>.Create;
@@ -739,7 +739,7 @@ begin
   Level := ALevel;
   Time := Now();
   QueryPerformanceCounter(PerfCounter);
-  Message := AMessage;
+  &Message := AMessage;
 end;
 
 { TReLog3ScreenThread }
